@@ -122,7 +122,7 @@ const resources = {
         0: "Ocak", 1: "Şubat", 2: "Mart", 3: "Nisan", 4: "Mayıs", 5: "Haziran",
         6: "Temmuz", 7: "Ağustos", 8: "Eylül", 9: "Ekim", 10: "Kasım", 11: "Aralık",
       },
-      weekdays_short: { 0: "P", 1: "P", 2: "S", 3: "Ç", 4: "P", 5: "C", 6: "C" },
+      weekdays_short: { 0: "Paz", 1: "Pzt", 2: "Sal", 3: "Çar", 4: "Per", 5: "Cum", 6: "Cmt" },
       weekdays_long: {
         0: "Pazar", 1: "Pazartesi", 2: "Salı", 3: "Çarşamba",
         4: "Perşembe", 5: "Cuma", 6: "Cumartesi",
@@ -194,7 +194,10 @@ const resources = {
   },
 };
 
+export const translations = resources;
+
 let initialized = false;
+
 export function initI18n() {
   if (initialized || typeof window === "undefined") return i18n;
   initialized = true;

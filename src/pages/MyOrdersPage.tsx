@@ -1,18 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { AppHeader } from "@/components/AppHeader";
 import { BottomBar } from "@/components/BottomBar";
 import { DishCard } from "@/components/DishCard";
 import { canModifyOrder, formatDate, ymd } from "@/lib/dateUtils";
 import { buildWhatsAppMessage, openWhatsApp } from "@/lib/whatsapp";
 import type { Dish, Lang } from "@/lib/types";
-
-export const Route = createFileRoute("/my-orders")({
-  component: MyOrdersPage,
-});
 
 interface LoadedOrder {
   id: string;
@@ -27,7 +21,7 @@ interface LoadedOrder {
   }[];
 }
 
-function MyOrdersPage() {
+export default function MyOrdersPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language as Lang;
   const [name, setName] = useState("");
@@ -63,9 +57,9 @@ function MyOrdersPage() {
       .select("id, quantity, dish:dishes(*)")
       .eq("order_id", ord.id);
 
-    const dayKey = new Date(ord.order_date + "T00:00:00").toLocaleDateString("en-US", {
-      weekday: "long",
-    }).toLowerCase();
+    const dayKey = new Date(ord.order_date + "T00:00:00")
+      .toLocaleDateString("en-US", { weekday: "long" })
+      .toLowerCase();
 
     const dishIds = (items ?? []).map((i: any) => i.dish.id);
     const { data: avail } = await supabase
@@ -75,7 +69,8 @@ function MyOrdersPage() {
       .in("dish_id", dishIds.length ? dishIds : ["00000000-0000-0000-0000-000000000000"]);
 
     const priceByDish = new Map<string, { id: string; price: number }>();
-    for (const a of avail ?? []) priceByDish.set((a as any).dish_id, { id: (a as any).id, price: (a as any).price });
+    for (const a of avail ?? [])
+      priceByDish.set((a as any).dish_id, { id: (a as any).id, price: (a as any).price });
 
     const loaded: LoadedOrder = {
       id: ord.id,
@@ -111,7 +106,6 @@ function MyOrdersPage() {
 
   const update = async () => {
     if (!order || !canEdit) return;
-    // Delete all existing items, re-insert new
     await supabase.from("order_items").delete().eq("order_id", order.id);
     if (items.length > 0) {
       await supabase.from("order_items").insert(
@@ -119,7 +113,7 @@ function MyOrdersPage() {
           order_id: order.id,
           dish_id: x.it.dish.id,
           quantity: x.qty,
-        })),
+        }))
       );
     }
     const msg = buildWhatsAppMessage({
@@ -127,7 +121,11 @@ function MyOrdersPage() {
       date: orderDate!,
       items: items.map((x) => ({
         name:
-          lang === "ar" ? x.it.dish.name_ar : lang === "tr" ? x.it.dish.name_tr : x.it.dish.name_en,
+          lang === "ar"
+            ? x.it.dish.name_ar
+            : lang === "tr"
+            ? x.it.dish.name_tr
+            : x.it.dish.name_en,
         qty: x.qty,
         price: x.it.price,
       })),
@@ -159,13 +157,17 @@ function MyOrdersPage() {
 
   return (
     <div className="min-h-screen bg-background pb-44">
-      <AppHeader />
       <main className="mx-auto max-w-2xl px-4 pt-4 space-y-5">
         <div className="rounded-2xl bg-card border border-border px-4 py-3">
-          <label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+          <label
+            htmlFor="search-name"
+            className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+          >
             {t("customer_name")}
           </label>
           <input
+            id="search-name"
+            name="search-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t("customer_name_placeholder")}

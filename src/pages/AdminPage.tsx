@@ -1,19 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppHeader } from "@/components/AppHeader";
 import { ADMIN_PASSWORD } from "@/config";
 import { formatDate, ymd } from "@/lib/dateUtils";
 import type { Lang } from "@/lib/types";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin")({
-  component: AdminPage,
-});
-
-function AdminPage() {
+export default function AdminPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language as Lang;
   const [authed, setAuthed] = useState(false);
@@ -41,7 +35,11 @@ function AdminPage() {
         agg.set(name, (agg.get(name) ?? 0) + it.quantity);
       }
     }
-    setSummary([...agg.entries()].map(([name, qty]) => ({ name, qty })).sort((a, b) => b.qty - a.qty));
+    setSummary(
+      [...agg.entries()]
+        .map(([name, qty]) => ({ name, qty }))
+        .sort((a, b) => b.qty - a.qty)
+    );
   };
 
   useEffect(() => {
@@ -51,13 +49,17 @@ function AdminPage() {
   if (!authed) {
     return (
       <div className="min-h-screen bg-background">
-        <AppHeader />
         <main className="mx-auto max-w-md px-4 pt-12">
           <div className="rounded-2xl bg-card border border-border p-5">
-            <label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <label
+              htmlFor="admin-password"
+              className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+            >
               {t("admin_password")}
             </label>
             <input
+              id="admin-password"
+              name="admin-password"
               type="password"
               value={pw}
               onChange={(e) => setPw(e.target.value)}
@@ -88,11 +90,12 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background pb-12">
-      <AppHeader />
       <main className="mx-auto max-w-2xl px-4 pt-4 space-y-5">
         <div className="rounded-2xl bg-card border border-border p-4 flex items-center gap-3">
           <input
             type="date"
+            id="admin-date"
+            name="admin-date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="flex-1 bg-transparent text-[15px] focus:outline-none"
@@ -140,12 +143,16 @@ function AdminPage() {
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">{o.customer_name}</span>
                     <span className="text-xs text-muted-foreground tnum">
-                      {new Date(o.created_at).toLocaleTimeString(lang === "ar" ? "ar-EG" : lang === "tr" ? "tr-TR" : "en-US", { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(o.created_at).toLocaleTimeString(
+                        lang === "ar" ? "ar-EG" : lang === "tr" ? "tr-TR" : "en-US",
+                        { hour: "2-digit", minute: "2-digit" }
+                      )}
                     </span>
                   </div>
                   <ul className="mt-1.5 space-y-0.5 text-sm text-muted-foreground">
                     {(o.items ?? []).map((it: any, i: number) => {
-                      const n = lang === "ar" ? it.dish.name_ar : lang === "tr" ? it.dish.name_tr : it.dish.name_en;
+                      const n =
+                        lang === "ar" ? it.dish.name_ar : lang === "tr" ? it.dish.name_tr : it.dish.name_en;
                       return <li key={i}>• {n} ×{it.quantity}</li>;
                     })}
                   </ul>

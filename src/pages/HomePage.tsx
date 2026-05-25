@@ -1,25 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { AppHeader } from "@/components/AppHeader";
 import { WeekSelector } from "@/components/WeekSelector";
 import { DishCard } from "@/components/DishCard";
 import { BottomBar } from "@/components/BottomBar";
-import {
-  getDayKey,
-  getDefaultDate,
-  ymd,
-} from "@/lib/dateUtils";
+import { getDayKey, getDefaultDate, ymd } from "@/lib/dateUtils";
 import { buildWhatsAppMessage, openWhatsApp } from "@/lib/whatsapp";
 import type { DayKey, Dish, Lang } from "@/lib/types";
-
-export const Route = createFileRoute("/")({
-  component: Index,
-});
 
 interface Row {
   id: string;
@@ -29,14 +19,14 @@ interface Row {
   dish: Dish;
 }
 
-function Index() {
+export default function HomePage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language as Lang;
   const [selected, setSelected] = useState<Date>(() => getDefaultDate());
   const [name, setName] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-  const { data: rows = [] } = useQuery({
+  const { data: rows = [] } = useQuery<Row[]>({
     queryKey: ["availability"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -59,7 +49,6 @@ function Index() {
   const mains = dayRows.filter((r) => r.dish.category === "main");
   const extras = dayRows.filter((r) => r.dish.category === "extra");
 
-  // Reset quantities when day changes
   useEffect(() => {
     setQuantities({});
   }, [selected]);
@@ -107,8 +96,8 @@ function Index() {
           lang === "ar"
             ? x.row.dish.name_ar
             : lang === "tr"
-              ? x.row.dish.name_tr
-              : x.row.dish.name_en,
+            ? x.row.dish.name_tr
+            : x.row.dish.name_en,
         qty: x.qty,
         price: x.row.price,
       })),
@@ -123,8 +112,6 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-background pb-44">
-      <AppHeader />
-
       <main className="mx-auto max-w-2xl px-4 pt-3 space-y-4">
         <div className="sticky top-[60px] z-20 -mx-1 px-1 pt-1 pb-1">
           <WeekSelector
@@ -188,10 +175,15 @@ function Index() {
         </AnimatePresence>
 
         <div className="rounded-2xl bg-card border border-border px-4 py-3">
-          <label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+          <label
+            htmlFor="customer-name"
+            className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+          >
             {t("customer_name")}
           </label>
           <input
+            id="customer-name"
+            name="customer-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t("customer_name_placeholder")}
